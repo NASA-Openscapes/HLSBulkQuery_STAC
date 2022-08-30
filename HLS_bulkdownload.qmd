@@ -1,0 +1,184 @@
+---
+title: "HLS_bulkdownload"
+format: html
+filters:
+  - grouped-tabsets
+environments: [program]
+editor: visual
+---
+
+# How to: Bulk Query HLS data with NASA's CMR-STAC API
+
+## Objectives
+
+-   Access [**H**armonized **L**andsat **S**entinel](https://lpdaac.usgs.gov/data/get-started-data/collection-overview/missions/harmonized-landsat-sentinel-2-hls-overview/) product data through [NASA's CMR-STAC API](https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html)
+
+-   Perform large queries (requests that return more than 2000 granules)
+
+-   Prepare a list of URLs representing query
+
+## Define Environment:
+
+::: panel-tabset
+## R
+
+```{r}
+library(httr)
+library(purrr)
+library(jsonlite)
+library(DT)
+library(magrittr)
+library(xml2)
+library(dplyr)
+library(reticulate)
+```
+
+## Python
+
+```{python}
+import requests
+import math
+import aiohttp 
+import asyncio
+import time
+```
+:::
+
+## Define parameters needed for search:
+
+1.  **URL**, for the LPCLOUD catalog
+
+::: panel-tabset
+## R
+
+```{r}
+lpcloud_url <- "https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search"
+```
+
+## Python
+
+```{python}
+lpcloud_url = 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search'
+```
+:::
+
+2.  **Collection ID**, as a list
+
+::: panel-tabset
+## R
+
+```{r}
+c <- list("HLSS30.v2.0", "HLSL30.v2.0")
+```
+
+## Python
+
+```{python}
+c = ['C2021957657-LPCLOUD', 'C2021957295-LPCLOUD']
+```
+:::
+
+3.  **Date-Time**, specified as `YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ` where: YYYY = year (ie., 2002), MM = month (ie., January = 01), DD = day of month, HH = hour, MM (second appearance) = minute, SS = second, Z = constant (part of the temporal query definition)
+
+::: panel-tabset
+## R
+
+```{r}
+d <- '2000-01-01T00:00:00Z/2001-01-31T23:59:59Z'
+```
+
+## Python
+
+```{python}
+d = '2000-01-01T00:00:00Z/2001-01-31T23:59:59Z'
+```
+:::
+
+4.  **Lower Left and Upper Right Coordinates of Spatial Bounding Box**, in decimal degrees - can draw a spatial bounding box [here](http://geojson.io/#map=2/20.0/0.0)
+
+::: panel-tabset
+## R
+
+```{r}
+b <- '-122.0622682571411,39.897234301806,-122.04918980598451,39.91309383703065'
+```
+
+## Python
+
+```{python}
+b = '-122.0622682571411,39.897234301806,-122.04918980598451,39.91309383703065'
+```
+:::
+
+## Search:
+
+words
+
+::: panel-tabset
+## R
+
+```{r}
+SearchResults <- httr::POST(lpcloud_url, 
+                       body = list(collections = c,
+                                   datetime = d,
+                                   bbox = b,
+                                   page_size = 2000), encode = "json") %>% 
+  httr::content(as = "text") %>%  
+  jsonlite::fromJSON()
+
+
+names(response)
+```
+
+## Python
+
+```{python}
+SearchResults = requests.get(lpcloud_url, 
+                        params={
+                            'concept_id': c, # collections
+                            'temporal': d,   # datetime_range
+                            'page_size': 2000,
+                            },
+                        headers={
+                            'Accept': 'application/json'
+                            }
+                       )
+print(SearchResults.status_code)
+```
+:::
+
+## View Results:
+
+Run this function to view your results in a searchable data table.
+
+    ViewSearchResults <- function(SearchResults) {
+          granule_list <- list()
+          n <- 1
+          for(row in row.names(response$features)){
+            f <- response$features[row,]
+            for (b in f$assets){
+              df <- data.frame(Collection = f$collection,
+                               Granule_ID = f$id,
+                                 Datetime = f$properties$datetime,
+                               Asset_Link = b$href, stringsAsFactors=FALSE)
+              granule_list[[n]] <- df
+              n <- n + 1
+            }
+          }
+          
+          search_df <- do.call(rbind, granule_list)
+          DT::datatable(search_df)
+    }
+
+### Contact Information
+
+**Material written by Bri Lind^1^, Erik Bolch^1^, Mahsa Jami^1^, and Aaron Friesz^1^**\
+Contact: [LPDAAC\@usgs.gov](mailto:LPDAAC@usgs.gov){.email}\
+Voice: +1-866-573-3222\
+Organization: Land Processes Distributed Active Archive Center (LP DAAC)\
+Website: <https://lpdaac.usgs.gov/> \
+Date last modified: Summer-2022
+
+^1^ KBR, Inc., contractor to the U.S. Geological Survey, Earth Resources Observation and Science (EROS) Center, Sioux Falls, South Dakota, USA. Work performed under USGS contract G0121D0001 for LP DAAC^2^.
+
+^2^ LP DAAC Work performed under NASA contract NNG14HH33I.
