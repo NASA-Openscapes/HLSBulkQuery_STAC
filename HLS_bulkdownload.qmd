@@ -134,11 +134,6 @@ Define search parameters as a list, perform search, check number of results retu
 ```{r}
 body <- list(limit =100, datetime = d, bbox = b, collections = c)
 
-list(limit=100,
-             datetime=cropland_datetime,
-             bbox= cropland_bbox,
-             collections= HLS_col)
-
 
 Results <- httr::POST(lpcloud_url, body, encode = "json") %>% 
                  httr::content(as = "text")%>% 
