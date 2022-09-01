@@ -38,10 +38,11 @@ library(reticulate)
 conda_create("enviro1")
 
 # install SciPy
-conda_install("r-reticulate", "aiohttp")
+conda_install(envname = "r-reticulate", packages = c("requests", "aiohttp"))
 
 # import SciPy (it will be automatically discovered in "r-reticulate")
 aiohttp <- import("aiohttp")
+requests <- import("requests")
 ```
 
 ## Python
