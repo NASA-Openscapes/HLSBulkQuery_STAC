@@ -31,24 +31,17 @@ library(magrittr)
 library(xml2)
 library(dplyr)
 library(reticulate)
-library(usethis)
-library(gitcreds)
 
-usethis::create_github_token()
-usethis::git_sitrep()
 
-#setup for Python Installation:
+# had to do for both requests and aiohttp
+# create a new environment 
+conda_create("enviro1")
+
 # install SciPy
 conda_install("r-reticulate", "aiohttp")
-conda_install("r-reticulate", "requests")
 
 # import SciPy (it will be automatically discovered in "r-reticulate")
 aiohttp <- import("aiohttp")
-requests <- import("requests")
-
-
-
-
 ```
 
 ## Python
@@ -76,7 +69,8 @@ lpcloud_url <- "https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search"
 ## Python
 
 ```{python}
-lpcloud_url = 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search'
+CMR_OPS= 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search'
+url = f'{CMR_OPS}/{"granules"}'
 ```
 :::
 
@@ -92,7 +86,7 @@ c <- list("HLSS30.v2.0", "HLSL30.v2.0")
 ## Python
 
 ```{python}
-c = ['C2021957657-LPCLOUD', 'C2021957295-LPCLOUD']
+collections = ['C2021957657-LPCLOUD', 'C2021957295-LPCLOUD']
 ```
 :::
 
@@ -102,78 +96,89 @@ c = ['C2021957657-LPCLOUD', 'C2021957295-LPCLOUD']
 ## R
 
 ```{r}
-d <- '2000-01-01T00:00:00Z/2001-01-31T23:59:59Z'
+d <- '2017-01-01T00:00:00Z/2017-01-31T23:59:59Z'
+pages <- 2000
 ```
 
 ## Python
 
 ```{python}
-d = '2000-01-01T00:00:00Z/2001-01-31T23:59:59Z'
+datetime_range = '2021-10-17T00:00:00Z,2021-10-19T23:59:59Z'
+page_size = 2000
 ```
 :::
 
-4.  **Lower Left and Upper Right Coordinates of Spatial Bounding Box**, in decimal degrees - can draw a spatial bounding box [here](http://geojson.io/#map=2/20.0/0.0)
+4.  **Lower Left and Upper Right Coordinates of Spatial Bounding Box**, in decimal degrees - can draw a spatial bounding box [here](http://geojson.io/#map=2/20.0/0.0) and and use the 'Draw a Marker' tool to determine the coordinates that correspond to the lower left, and upper right corners of the bounding box.
 
 ::: panel-tabset
 ## R
 
 ```{r}
-b <- '-122.0622682571411,39.897234301806,-122.04918980598451,39.91309383703065'
+b <- c(-25.08311136003093, 31.47994995117188,-24.87896163119999,31.718902587890625)
 ```
 
 ## Python
 
 ```{python}
-b = '-122.0622682571411,39.897234301806,-122.04918980598451,39.91309383703065'
+b = '-25.08311136003093, 31.47994995117188,-24.87896163119999,31.718902587890625'
 ```
 :::
 
 ## Search:
 
-words
+Define search parameters as a list, perform search, check number of results returned.
 
 ::: panel-tabset
 ## R
 
 ```{r}
-SearchResults <- httr::POST(lpcloud_url, 
-                       body = list(collections = c,
-                                   datetime = d,
-                                   bbox = b,
-                                   page_size = 2000), encode = "json") %>% 
-  httr::content(as = "text") %>%  
-  jsonlite::fromJSON()
+body <- list(limit =100, datetime = d, bbox = b, collections = c)
+
+list(limit=100,
+             datetime=cropland_datetime,
+             bbox= cropland_bbox,
+             collections= HLS_col)
 
 
-names(response)
+Results <- httr::POST(lpcloud_url, body, encode = "json") %>% 
+                 httr::content(as = "text")%>% 
+                 fromJSON()
+
+
+
+names(Results)         # check names in Search Results
+Results$numberReturned # look at number returned
 ```
 
 ## Python
 
 ```{python}
-SearchResults = requests.get(lpcloud_url, 
+response = requests.get(url, 
                         params={
-                            'concept_id': c, # collections
-                            'temporal': d,   # datetime_range
-                            'page_size': 2000,
+                            'concept_id': collections, # collections
+                            'temporal': datetime_range,
+                            'page_size': page_size,
                             },
                         headers={
                             'Accept': 'application/json'
                             }
-                       )
-print(SearchResults.status_code)
+                            )
+                       
+print(response.status_code)
 ```
 :::
 
 ## View Results:
 
-Run this function to view your results in a searchable data table.
+::: panel-tabset
+## R
 
+```{r}
     ViewSearchResults <- function(SearchResults) {
           granule_list <- list()
           n <- 1
-          for(row in row.names(response$features)){
-            f <- response$features[row,]
+          for(row in row.names(SearchResults$features)){
+            f <- SearchResults$features[row,]
             for (b in f$assets){
               df <- data.frame(Collection = f$collection,
                                Granule_ID = f$id,
@@ -185,8 +190,18 @@ Run this function to view your results in a searchable data table.
           }
           
           search_df <- do.call(rbind, granule_list)
-          DT::datatable(search_df)
+          print(DT::datatable(search_df))
     }
+    
+```
+
+## Python
+
+```{python}
+
+
+```
+:::
 
 ### Contact Information
 
