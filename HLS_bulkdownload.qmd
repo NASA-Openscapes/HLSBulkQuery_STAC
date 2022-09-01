@@ -31,6 +31,24 @@ library(magrittr)
 library(xml2)
 library(dplyr)
 library(reticulate)
+library(usethis)
+library(gitcreds)
+
+usethis::create_github_token()
+usethis::git_sitrep()
+
+#setup for Python Installation:
+# install SciPy
+conda_install("r-reticulate", "aiohttp")
+conda_install("r-reticulate", "requests")
+
+# import SciPy (it will be automatically discovered in "r-reticulate")
+aiohttp <- import("aiohttp")
+requests <- import("requests")
+
+
+
+
 ```
 
 ## Python
