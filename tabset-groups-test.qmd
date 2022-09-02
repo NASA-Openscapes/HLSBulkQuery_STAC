@@ -1,0 +1,59 @@
+---
+title: "Testing Group Tabsets"
+format: html
+---
+*excerpt from HLS_bulkdownload.qmd*
+
+## Define Environment:
+
+::: {.panel-tabset}
+## R
+
+```{r}
+library(httr)
+library(purrr)
+library(jsonlite)
+library(DT)
+library(magrittr)
+library(xml2)
+library(dplyr)
+library(crul)
+library(reticulate)
+
+# install 
+conda_install(envname = "r-reticulate", packages = c("requests", "aiohttp"))
+
+# import SciPy (it will be automatically discovered in "r-reticulate")
+aiohttp <- import("aiohttp")
+requests <- import("requests")
+```
+
+## Python
+
+```{python}
+import requests
+import math
+import aiohttp 
+import asyncio
+import time
+```
+:::
+
+## Define parameters needed for search:
+
+1.  **URL**, for the LPCLOUD catalog
+
+::: {.panel-tabset}
+## R
+
+```{r}
+lpcloud_url <- "https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search"
+```
+
+## Python
+
+```{python}
+CMR_OPS= 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search'
+url = f'{CMR_OPS}/{"granules"}'
+```
+:::
