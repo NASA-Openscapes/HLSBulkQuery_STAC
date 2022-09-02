@@ -6,24 +6,25 @@ format: html
 
 ## Define Environment:
 
-::: {.panel-tabset}
+::: {.panel-tabset group="language"}
+
 ## R
 
 ```{r}
-library(httr)
-library(purrr)
-library(jsonlite)
-library(DT)
-library(magrittr)
-library(xml2)
-library(dplyr)
-library(crul)
-library(reticulate)
+#| message: false
+
+library(tidyverse)  # install.packages("tidyverse")
+library(reticulate) # install.packages("reticulate")
+library(httr)       # tidyverse, but not auto-loaded
+library(jsonlite)   # tidyverse, but not auto-loaded
+library(crul)       # install.packages("crul")
+
 
 # install 
-conda_install(envname = "r-reticulate", packages = c("requests", "aiohttp"))
+conda_install(envname = "r-reticulate", 
+              packages = c("requests", "aiohttp"))
 
-# import SciPy (it will be automatically discovered in "r-reticulate")
+# import SciPy (will be automatically discovered in "r-reticulate")
 aiohttp <- import("aiohttp")
 requests <- import("requests")
 ```
@@ -43,7 +44,8 @@ import time
 
 1.  **URL**, for the LPCLOUD catalog
 
-::: {.panel-tabset}
+::: {.panel-tabset group="language"}
+
 ## R
 
 ```{r}
