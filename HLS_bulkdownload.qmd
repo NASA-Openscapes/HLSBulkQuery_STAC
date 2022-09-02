@@ -30,14 +30,10 @@ library(DT)
 library(magrittr)
 library(xml2)
 library(dplyr)
+library(crul)
 library(reticulate)
 
-
-# had to do for both requests and aiohttp
-# create a new environment 
-conda_create("enviro1")
-
-# install SciPy
+# install 
 conda_install(envname = "r-reticulate", packages = c("requests", "aiohttp"))
 
 # import SciPy (it will be automatically discovered in "r-reticulate")
@@ -135,15 +131,18 @@ Define search parameters as a list, perform search, check number of results retu
 ```{r}
 body <- list(limit =100, datetime = d, bbox = b, collections = c)
 
-
 Results <- httr::POST(lpcloud_url, body, encode = "json") %>% 
                  httr::content(as = "text")%>% 
                  fromJSON()
+    
+    names(Results)         # check names in Search Results
+    Results$numberReturned # look at number returned
+    
 
+# help define components of url
+crul::url_parse("http://www.domain.com/path/to/resource?arg1=true&arg2=false")    
+    
 
-
-names(Results)         # check names in Search Results
-Results$numberReturned # look at number returned
 ```
 
 ## Python
@@ -189,6 +188,7 @@ print(response.status_code)
           print(DT::datatable(search_df))
     }
     
+    ViewSearchResults(Results)
 ```
 
 ## Python
