@@ -23,20 +23,21 @@ editor: visual
 ## R
 
 ```{r}
-library(httr)
-library(purrr)
-library(jsonlite)
-library(DT)
-library(magrittr)
-library(xml2)
-library(dplyr)
-library(crul)
-library(reticulate)
+#| message: false
+
+library(tidyverse)  # install.packages("tidyverse")
+library(httr)       # tidyverse, but not auto-loaded
+library(jsonlite)   # tidyverse, but not auto-loaded
+library(xml2)       # tidyverse, but not auto-loaded
+library(DT)         # install.packages("DT")
+library(crul)       # install.packages("crul")
+library(reticulate) # install.packages("reticulate")
 
 # install 
-conda_install(envname = "r-reticulate", packages = c("requests", "aiohttp"))
+conda_install(envname = "r-reticulate", 
+              packages = c("requests", "aiohttp"))
 
-# import SciPy (it will be automatically discovered in "r-reticulate")
+# import SciPy (will be automatically discovered in "r-reticulate")
 aiohttp <- import("aiohttp")
 requests <- import("requests")
 ```
