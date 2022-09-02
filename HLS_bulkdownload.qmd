@@ -1,8 +1,6 @@
 ---
 title: "HLS_bulkdownload"
 format: html
-filters:
-  - grouped-tabsets
 environments: [program]
 editor: visual
 ---
@@ -19,24 +17,27 @@ editor: visual
 
 ## Define Environment:
 
-::: panel-tabset
+::: {.panel-tabset group="language"}
 ## R
 
 ```{r}
-library(httr)
-library(purrr)
-library(jsonlite)
-library(DT)
-library(magrittr)
-library(xml2)
-library(dplyr)
-library(crul)
-library(reticulate)
+#| message: false
 
-# install 
-conda_install(envname = "r-reticulate", packages = c("requests", "aiohttp"))
+## load R libraries; install from command line  
+library(tidyverse)  # install.packages("tidyverse")
+library(reticulate) # install.packages("reticulate")
+library(httr)       # tidyverse, but not auto-loaded
+library(jsonlite)   # tidyverse, but not auto-loaded
+# library(xml2)     # tidyverse, but not auto-loaded 
+library(crul)       # install.packages("crul")
+# library(DT)       # install.packages("DT")
 
-# import SciPy (it will be automatically discovered in "r-reticulate")
+
+## install Python libraries; load in following python chunk
+conda_install(envname = "r-reticulate", 
+              packages = c("requests", "aiohttp"))
+
+# import SciPy (will be automatically discovered in "r-reticulate")
 aiohttp <- import("aiohttp")
 requests <- import("requests")
 ```
@@ -56,7 +57,7 @@ import time
 
 1.  **URL**, for the LPCLOUD catalog
 
-::: panel-tabset
+::: {.panel-tabset group="language"}
 ## R
 
 ```{r}
@@ -66,14 +67,14 @@ lpcloud_url <- "https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search"
 ## Python
 
 ```{python}
-CMR_OPS= 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search'
+CMR_OPS = 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search'
 url = f'{CMR_OPS}/{"granules"}'
 ```
 :::
 
 2.  **Collection ID**, as a list
 
-::: panel-tabset
+::: {.panel-tabset group="language"}
 ## R
 
 ```{r}
@@ -89,7 +90,7 @@ collections = ['C2021957657-LPCLOUD', 'C2021957295-LPCLOUD']
 
 3.  **Date-Time**, specified as `YYYY-MM-DDTHH:MM:SSZ/YYYY-MM-DDTHH:MM:SSZ` where: YYYY = year (ie., 2002), MM = month (ie., January = 01), DD = day of month, HH = hour, MM (second appearance) = minute, SS = second, Z = constant (part of the temporal query definition)
 
-::: panel-tabset
+::: {.panel-tabset group="language"}
 ## R
 
 ```{r}
@@ -107,7 +108,7 @@ page_size = 2000
 
 4.  **Lower Left and Upper Right Coordinates of Spatial Bounding Box**, in decimal degrees - can draw a spatial bounding box [here](http://geojson.io/#map=2/20.0/0.0) and and use the 'Draw a Marker' tool to determine the coordinates that correspond to the lower left, and upper right corners of the bounding box.
 
-::: panel-tabset
+::: {.panel-tabset group="language"}
 ## R
 
 ```{r}
@@ -125,7 +126,7 @@ b = '-25.08311136003093, 31.47994995117188,-24.87896163119999,31.718902587890625
 
 Define search parameters as a list, perform search, check number of results returned.
 
-::: panel-tabset
+::: {.panel-tabset group="language"}
 ## R
 
 ```{r}
@@ -165,30 +166,30 @@ print(response.status_code)
 
 ## View Results:
 
-::: panel-tabset
+::: {.panel-tabset group="language"}
 ## R
 
 ```{r}
-    ViewSearchResults <- function(SearchResults) {
-          granule_list <- list()
-          n <- 1
-          for(row in row.names(SearchResults$features)){
-            f <- SearchResults$features[row,]
-            for (b in f$assets){
-              df <- data.frame(Collection = f$collection,
-                               Granule_ID = f$id,
-                                 Datetime = f$properties$datetime,
-                               Asset_Link = b$href, stringsAsFactors=FALSE)
-              granule_list[[n]] <- df
-              n <- n + 1
-            }
-          }
-          
-          search_df <- do.call(rbind, granule_list)
-          print(DT::datatable(search_df))
+ViewSearchResults <- function(SearchResults) {
+  granule_list <- list()
+  n <- 1
+  for(row in row.names(SearchResults$features)){
+    f <- SearchResults$features[row,]
+    for (b in f$assets){
+      df <- data.frame(Collection = f$collection,
+                       Granule_ID = f$id,
+                       Datetime = f$properties$datetime,
+                       Asset_Link = b$href, stringsAsFactors=FALSE)
+      granule_list[[n]] <- df
+      n <- n + 1
     }
-    
-    ViewSearchResults(Results)
+  }
+  
+  search_df <- do.call(rbind, granule_list)
+  print(DT::datatable(search_df))
+}
+
+ViewSearchResults(Results)
 ```
 
 ## Python
