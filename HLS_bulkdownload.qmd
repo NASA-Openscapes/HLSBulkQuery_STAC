@@ -1,8 +1,6 @@
 ---
 title: "HLS_bulkdownload"
 format: html
-filters:
-  - grouped-tabsets
 environments: [program]
 editor: visual
 ---
@@ -26,12 +24,14 @@ editor: visual
 #| message: false
 
 library(tidyverse)  # install.packages("tidyverse")
+library(reticulate) # install.packages("reticulate")
 library(httr)       # tidyverse, but not auto-loaded
 library(jsonlite)   # tidyverse, but not auto-loaded
-library(xml2)       # tidyverse, but not auto-loaded
-library(DT)         # install.packages("DT")
+# library(xml2)       # tidyverse, but not auto-loaded 
 library(crul)       # install.packages("crul")
-library(reticulate) # install.packages("reticulate")
+# library(DT)         # install.packages("DT")
+
+
 
 # install 
 conda_install(envname = "r-reticulate", 
@@ -67,7 +67,7 @@ lpcloud_url <- "https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search"
 ## Python
 
 ```{python}
-CMR_OPS= 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search'
+CMR_OPS = 'https://cmr.earthdata.nasa.gov/stac/LPCLOUD/search'
 url = f'{CMR_OPS}/{"granules"}'
 ```
 :::
@@ -170,26 +170,26 @@ print(response.status_code)
 ## R
 
 ```{r}
-    ViewSearchResults <- function(SearchResults) {
-          granule_list <- list()
-          n <- 1
-          for(row in row.names(SearchResults$features)){
-            f <- SearchResults$features[row,]
-            for (b in f$assets){
-              df <- data.frame(Collection = f$collection,
-                               Granule_ID = f$id,
-                                 Datetime = f$properties$datetime,
-                               Asset_Link = b$href, stringsAsFactors=FALSE)
-              granule_list[[n]] <- df
-              n <- n + 1
-            }
-          }
-          
-          search_df <- do.call(rbind, granule_list)
-          print(DT::datatable(search_df))
+ViewSearchResults <- function(SearchResults) {
+  granule_list <- list()
+  n <- 1
+  for(row in row.names(SearchResults$features)){
+    f <- SearchResults$features[row,]
+    for (b in f$assets){
+      df <- data.frame(Collection = f$collection,
+                       Granule_ID = f$id,
+                       Datetime = f$properties$datetime,
+                       Asset_Link = b$href, stringsAsFactors=FALSE)
+      granule_list[[n]] <- df
+      n <- n + 1
     }
-    
-    ViewSearchResults(Results)
+  }
+  
+  search_df <- do.call(rbind, granule_list)
+  print(DT::datatable(search_df))
+}
+
+ViewSearchResults(Results)
 ```
 
 ## Python
