@@ -23,7 +23,7 @@ editor: visual
 ```{r}
 #| message: false
 
-## R libraries;  
+## load R libraries; install from command line  
 library(tidyverse)  # install.packages("tidyverse")
 library(reticulate) # install.packages("reticulate")
 library(httr)       # tidyverse, but not auto-loaded
@@ -33,7 +33,7 @@ library(crul)       # install.packages("crul")
 # library(DT)       # install.packages("DT")
 
 
-## Python libraries 
+## install Python libraries; load in following python chunk
 conda_install(envname = "r-reticulate", 
               packages = c("requests", "aiohttp"))
 
